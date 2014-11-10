@@ -31,6 +31,7 @@ total = 0
 match = 0
 pos = 0
 
+window = []
 
 for i in range(10000):
     assignment = list()#query[1])
@@ -49,6 +50,17 @@ for i in range(10000):
             pos += 1
         
     if match>0:
-        g.add_point(total, float(pos)/match)
+        v = float(pos)/match
+        
+        g.add_point(total, v)
+        window.append(v)
+        while len(window)>25:
+            window = window[1:]
+        if v>0.0:
+            if max(window)-min(window) < .001:
+                break
+                
+print sum(window)/len(window)
+print total
 
 g.show()
