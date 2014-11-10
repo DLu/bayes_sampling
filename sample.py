@@ -1,8 +1,15 @@
 from dgraph import DynamicGraph
 from rain import RAIN_NETWORK
 from grass import GRASS_NETWORK
+import sys
+from util import *
 
 g = DynamicGraph(.0)
+
+if '-r' in sys.argv:
+    rejection = True
+else:
+    rejection = False
 
 def assigned(variable, assignment):
     l = variable.lower()
@@ -13,7 +20,7 @@ def assigned(variable, assignment):
 def matches(query, assignment):
     js, gs = query
     for g in gs:
-        if g not in assignment:
+        if g not in assignment and neg(g) in assignment:
             return None
     bit = []
     for j in js:
@@ -41,6 +48,11 @@ for i in range(10000):
         pa = [a for a in assignment if a[1].upper() in node.parents]
         val = node.sample(pa)
         assignment.append(val)
+        if rejection and matches(query, assignment)==None:
+            break
+        
+    if len(assignment) < len(network):
+        continue
         
     total += 1
     m = matches(query, assignment)
@@ -53,11 +65,14 @@ for i in range(10000):
         v = float(pos)/match
         
         g.add_point(total, v)
+        
+    if m:
         window.append(v)
-        while len(window)>25:
+        while len(window)>250:
             window = window[1:]
-        if v>0.0:
-            if max(window)-min(window) < .001:
+        if v>0.0 and len(window)>10:
+            print "%.3f"%(max(window)-min(window))
+            if max(window)-min(window) < .01:
                 break
                 
 print sum(window)/len(window)
