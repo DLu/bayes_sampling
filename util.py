@@ -28,3 +28,10 @@ def tprint(p, table):
     for v,pr in sorted(table.iteritems()):
         print '\t'.join(v) + '\t' + str(pr)
     print
+    
+def neg(a):
+    if a[0]=='+':
+        return '-' + a[1]
+    else:
+        return '+' + a[1]
+

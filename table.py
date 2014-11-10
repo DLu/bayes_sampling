@@ -4,6 +4,9 @@ class Table:
         self.right = right
         self.values = values
         
+    def get_key(self):
+        return (self.left, self.right)
+        
     def __repr__(self):
         s = ''
         x = self.values.keys()[0]
