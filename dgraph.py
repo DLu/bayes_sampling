@@ -5,7 +5,7 @@ from time import sleep
 class DynamicGraph:
     def __init__(self, sleep=0.0):
         self.sleep = sleep
-        self.hl, = plt.plot([], [], 'o-')
+        self.hl, = plt.plot([], [], '-')
         plt.show(block=False)
         self.ax = plt.gca()
         
@@ -16,6 +16,9 @@ class DynamicGraph:
         self.ax.autoscale_view() 
         plt.draw()
         sleep(self.sleep)
+        
+    def show(self):
+        plt.show()
     
 
 
