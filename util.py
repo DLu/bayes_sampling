@@ -34,4 +34,24 @@ def neg(a):
         return '-' + a[1]
     else:
         return '+' + a[1]
+        
+def assigned(variable, assignment):
+    l = variable.lower()
+    if '+' + l in assignment or '-' + l in assignment:
+        return True
+    return False
+    
+def matches(query, assignment):
+    js, gs = query
+    for g in gs:
+        if g not in assignment and neg(g) in assignment:
+            return None
+    bit = []
+    for j in js:
+        l = j.lower()
+        if '+' + l in assignment:
+            bit.append( '+' + l )
+        else:
+            bit.append( '-' + l )
+    return bit
 
