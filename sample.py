@@ -66,14 +66,42 @@ class GibbsSampler:
         sample = []
         for a in self.assignment:
             if a[1]==lower_v:
-                sample.append(None)
+                sample.append(neg(a))
             else:
                 sample.append(a)
-        print self.assignment
-        print sample
-        exit(0)
-        return sample
 
+        blanket = []                
+        for node in self.network:
+            #print node.name, [x for x in node.parents]
+            if node==var:
+                blanket.append(node)
+            #elif node.name in var.parents:
+            #    blanket.append(node)
+            elif var.name in node.parents:
+                blanket.append(node)
+            #print node
+        #print var.name, [x.name for x in blanket]
+        
+        #print self.assignment
+        #print sample
+        a = self.product(blanket, self.assignment)
+        b = self.product(blanket, sample)
+        total = a+b
+        a = a/total
+        #print a
+        #print b
+        #exit(0)
+        
+        if random.random() >= a:
+            self.assignment = sample
+        return self.assignment
+        
+    def product(self, nodes, assignment):
+        p = 1.0
+        for node in nodes:
+            x = node.table.get_value(assignment)
+            p *= x
+        return p
         
 
 
