@@ -2,6 +2,7 @@ from dgraph import DynamicGraph
 from rain import RAIN_NETWORK
 from grass import GRASS_NETWORK
 import sys
+import random
 from util import *
 
 class Sampler:
@@ -39,6 +40,41 @@ class Sampler:
                 if node.name in [v[1].upper() for v in self.query[1] ]:
                     inc *= node.table.get_value(assignment)
             return inc
+            
+class GibbsSampler:
+    def __init__(self, network, query):
+        self.network = network
+        self.query = query
+        sampler = Sampler(network, query, fix=True)
+        self.assignment = sampler.sample()
+        
+        self.free_vars = []
+        for node in network:
+            a = node.name.lower()
+            if '+' + a in query[1] or '-' + a in query[1]:
+                continue
+            else:
+                self.free_vars.append(node)
+                
+    def get_weight(self, assignment):
+        return 1.0
+        
+    def sample(self):
+        var = random.choice(self.free_vars)
+        lower_v = var.name.lower()
+        
+        sample = []
+        for a in self.assignment:
+            if a[1]==lower_v:
+                sample.append(None)
+            else:
+                sample.append(a)
+        print self.assignment
+        print sample
+        exit(0)
+        return sample
+
+        
 
 
 g = DynamicGraph(.0)
@@ -52,6 +88,8 @@ elif '-f' in sys.argv:
     sampler = Sampler(network, query, fix = True)
 elif '-w' in sys.argv:
     sampler = Sampler(network, query, fix = True, weight = True)
+elif '-g' in sys.argv:
+    sampler = GibbsSampler(network, query)
 else:
     sampler = Sampler(network, query)
     
