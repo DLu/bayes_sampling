@@ -26,3 +26,15 @@ class Table:
             s += str(self.values[r])
             s += '\n'
         return s
+        
+    def get_value(self, asn):
+        key = []
+        for v in self.values.keys()[0]:
+            l = v[1]
+            for k in asn:
+                if k[1]==l:
+                    key.append(k)
+                    break
+        key = tuple(key)
+        return self.values[key]
+

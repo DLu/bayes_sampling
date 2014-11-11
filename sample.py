@@ -6,10 +6,17 @@ from util import *
 
 g = DynamicGraph(.0)
 
+rejection = False
+fix = False
+weight = False
+
 if '-r' in sys.argv:
     rejection = True
-else:
-    rejection = False
+elif '-f' in sys.argv:
+    fix = True
+elif '-w' in sys.argv:
+    fix = True
+    weight = True
 
 def assigned(variable, assignment):
     l = variable.lower()
@@ -41,7 +48,11 @@ pos = 0
 window = []
 
 for i in range(10000):
-    assignment = list()#query[1])
+    if not fix:
+        assignment = list()
+    else:
+        assignment = list(query[1])
+        
     for node in network:
         if assigned(node.name, assignment):
             continue
@@ -57,9 +68,15 @@ for i in range(10000):
     total += 1
     m = matches(query, assignment)
     if m:
-        match += 1
+        inc = 1
+        if weight:
+            for node in network:
+                if node.name in [v[1].upper() for v in query[1] ]:
+                    inc *= node.table.get_value(assignment)
+            
+        match += inc
         if m[0][0]=='+':
-            pos += 1
+            pos += inc
         
     if match>0:
         v = float(pos)/match
