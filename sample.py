@@ -4,23 +4,57 @@ from grass import GRASS_NETWORK
 import sys
 from util import *
 
+class Sampler:
+    def __init__(self, network, query, rejection=False, fix=False, weight=False):
+        self.network = network
+        self.query = query
+        self.rejection = rejection
+        self.fix = fix
+        self.weight = weight
+        
+    def sample(self):
+        if not self.fix:
+            assignment = list()
+        else:
+            assignment = list(self.query[1])
+            
+        for node in self.network:
+            if assigned(node.name, assignment):
+                continue
+            pa = [a for a in assignment if a[1].upper() in node.parents]
+            val = node.sample(pa)
+            assignment.append(val)
+            if self.rejection and matches(query, assignment)==None:
+                # generate new sample
+                return self.sample()
+            
+        return assignment
+        
+    def get_weight(self, assignment):
+        if not self.weight:
+            return 1.0
+        else:
+            inc = 1.0
+            for node in self.network:
+                if node.name in [v[1].upper() for v in self.query[1] ]:
+                    inc *= node.table.get_value(assignment)
+            return inc
+
+
 g = DynamicGraph(.0)
 
-rejection = False
-fix = False
-weight = False
+network = GRASS_NETWORK
+query = (('C',), ('+s',))
 
 if '-r' in sys.argv:
-    rejection = True
+    sampler = Sampler(network, query, rejection = True)
 elif '-f' in sys.argv:
-    fix = True
+    sampler = Sampler(network, query, fix = True)
 elif '-w' in sys.argv:
-    fix = True
-    weight = True
-
-network = GRASS_NETWORK
-
-query = (('C',), ('+s',))
+    sampler = Sampler(network, query, fix = True, weight = True)
+else:
+    sampler = Sampler(network, query)
+    
 total = 0
 match = 0
 pos = 0
@@ -28,32 +62,12 @@ pos = 0
 window = []
 
 for i in range(10000):
-    if not fix:
-        assignment = list()
-    else:
-        assignment = list(query[1])
-        
-    for node in network:
-        if assigned(node.name, assignment):
-            continue
-        pa = [a for a in assignment if a[1].upper() in node.parents]
-        val = node.sample(pa)
-        assignment.append(val)
-        if rejection and matches(query, assignment)==None:
-            break
-        
-    if len(assignment) < len(network):
-        continue
-        
+    assignment = sampler.sample()
+    inc = sampler.get_weight(assignment)
+    
     total += 1
     m = matches(query, assignment)
     if m:
-        inc = 1
-        if weight:
-            for node in network:
-                if node.name in [v[1].upper() for v in query[1] ]:
-                    inc *= node.table.get_value(assignment)
-            
         match += inc
         if m[0][0]=='+':
             pos += inc
